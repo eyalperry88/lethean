@@ -36,7 +36,7 @@ def gn_helper(planes):
     return nn.GroupNorm(args.group_norm, planes)
 norm_layer = gn_helper
 
-net = resnet18(norm_layer=norm_layer)
+net = resnet18(num_classes = 10, norm_layer=norm_layer)
 net.to(device)
 net = torch.nn.DataParallel(net)
 
