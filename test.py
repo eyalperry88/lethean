@@ -77,5 +77,5 @@ for i in range(0, len(np_all)):
     correctness, confidence = test_single(net, img, label)
     correct.append(correctness)
     if i % 1000 == 999:
-        print("%d%%" % (i * 100 / len(np_all)))
+        print("%d%%" % ((i  + 1) * 100 / len(np_all)))
 print('Test error cls %.2f' %((1-mean(correct))*100))
