@@ -4,7 +4,6 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
-from tqdm import tqdm
 from utils.misc import *
 from utils.adapt_helpers import *
 from utils.rotation import rotate_batch
@@ -71,7 +70,7 @@ np_all = np_all[((args.level - 1) * 10000):(args.level*10000), ]
 
 print('Running original network...')
 correct = []
-for i in tqdm(range(0, len(np_all))):
+for i in range(0, len(np_all)):
     label = teset[i][1]
     img = np_all[i, ]
 
