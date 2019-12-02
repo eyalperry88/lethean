@@ -24,10 +24,10 @@ def adapt_single(model, image, optimizer, criterion, niter, batch_size):
 	for iteration in range(niter):
 		inputs = [rotation_tr_transforms(image) for _ in range(batch_size)]
 		inputs, labels = rotate_batch(inputs)
-		inputs, labels = inputs.cuda(), labels.cuda()
+		inputs, labels = inputs.to(device), labels.to(device)
 		optimizer.zero_grad()
-		outputs = model(inputs)
-		loss = criterion(outputs, labels)
+		_, ssh = model(inputs)
+		loss = criterion(ssh, labels)
 		loss.backward()
 		optimizer.step()
 
@@ -35,8 +35,8 @@ def test_single(model, image, label):
 	model.eval()
 	inputs = te_transforms(image).unsqueeze(0)
 	with torch.no_grad():
-		outputs, _ = model(inputs.to(device))
+		outputs, outputs_ssh = model(inputs.to(device))
 		_, predicted = outputs.max(1)
-		confidence = nn.functional.softmax(outputs, dim=1).squeeze()[label].item()
+		confidence = nn.functional.softmax(outputs_ssh, dim=1).squeeze()[0].item()
 	correctness = 1 if predicted.item() == label else 0
 	return correctness, confidence
