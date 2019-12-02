@@ -123,8 +123,20 @@ for i in range(0, len(np_all)):
         print("%d%%" % ((i  + 1) * 100 / len(np_all)))
 print('Test error cls %.2f' %((1-mean(correct_ttl2))*100))
 
-print('Restarting network, and running TTL (online) on second curruption...')
+print('Restarting network, and running original on second corruption...')
 net.load_state_dict(ckpt['net'])
+correct_orig2 = []
+for i in range(0, len(np_all)):
+    label = np_labels[i]
+    img = np_all[i, ]
+
+    correctness, _ = test_single(net, img, label)
+    correct_orig2.append(correctness)
+    if i % 1000 == 999:
+        print("%d%%" % ((i  + 1) * 100 / len(np_all)))
+print('Test error cls %.2f' %((1-mean(correct_orig2))*100))
+
+print('Running TTL on second corruption...')
 correct_ttl3 = []
 confs3 = []
 for i in range(0, len(np_all)):
@@ -150,6 +162,8 @@ rdict = {'cls_correct_original': np.asarray(correct_orig),
         'cls_correct_adapted2': np.asarray(correct_ttl2),
         'ssh_confide2': np.asarray(confs2),
         'cls_adapted2':1-mean(correct_ttl2),
+        'cls_correct_original2': np.asarray(correct_orig2),
+        'cls_original2':1-mean(correct_orig2),
         'cls_correct_adapted3': np.asarray(correct_ttl3),
         'ssh_confide3': np.asarray(confs3),
         'cls_adapted3':1-mean(correct_ttl3)
