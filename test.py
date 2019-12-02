@@ -26,6 +26,7 @@ classes = ('plane', 'car', 'bird', 'cat',
 parser = argparse.ArgumentParser()
 parser.add_argument('--level', default=0, type=int)
 parser.add_argument('--corruption', default='original')
+parser.add_argument('--corruption2', default='original')
 parser.add_argument('--dataroot', default='data/CIFAR-10-C/')
 parser.add_argument('--shared', default=None)
 ########################################################################
@@ -64,28 +65,29 @@ criterion = nn.CrossEntropyLoss().to(device)
 optimizer = optim.SGD(net.parameters(), lr=args.lr)
 
 print('Loading data... (Corruption: %s, Level: %d)' % (args.corruption, args.level))
-teset, _ = prepare_test_data(args, use_transforms=False)
+np_labels = np.load(args.dataroot + "labels.npy")
 np_all = np.load(args.dataroot + args.corruption + ".npy")
+np_labels = np_labels[((args.level - 1) * 10000):(args.level*10000)]
 np_all = np_all[((args.level - 1) * 10000):(args.level*10000), ]
 
 print('Running original network...')
-correct = []
+correct_orig = []
 for i in range(0, len(np_all)):
-    label = teset[i][1]
+    label = np_labels[i]
     img = np_all[i, ]
 
     correctness, _ = test_single(net, img, label)
-    correct.append(correctness)
+    correct_orig.append(correctness)
     if i % 1000 == 999:
         print("%d%%" % ((i  + 1) * 100 / len(np_all)))
-print('Test error cls %.2f' %((1-mean(correct))*100))
+print('Test error cls %.2f' %((1-mean(correct_orig))*100))
 
 
 print('Running TTL network (online)...')
-correct2 = []
+correct_ttl = []
 confs = []
 for i in range(0, len(np_all)):
-    label = teset[i][1]
+    label = np_labels[i]
     img = np_all[i, ]
 
     _, confidence = test_single(net, img, label)
@@ -93,16 +95,63 @@ for i in range(0, len(np_all)):
     if confidence < args.threshold:
         adapt_single(net, img, optimizer, criterion, args.niter, args.batch_size)
     correctness, _ = test_single(net, img, label)
-    correct2.append(correctness)
+    correct_ttl.append(correctness)
     if i % 1000 == 999:
         print("%d%%" % ((i  + 1) * 100 / len(np_all)))
-print('Test error cls %.2f' %((1-mean(correct2))*100))
+print('Test error cls %.2f' %((1-mean(correct_ttl))*100))
 
 
-rdict = {'cls_correct_original': np.asarray(correct),
-        'cls_correct_adapted': np.asarray(correct2),
+print('Loading data... (Corruption: %s, Level: %d)' % (args.corruption2, args.level))
+np_all2 = np.load(args.dataroot + args.corruption2 + ".npy")
+np_all2 = np_all2[((args.level - 1) * 10000):(args.level*10000), ]
+
+
+print('Running TTL network (online) on second curruption...')
+correct_ttl2 = []
+confs2 = []
+for i in range(0, len(np_all)):
+    label = np_labels[i]
+    img = np_all2[i, ]
+
+    _, confidence = test_single(net, img, label)
+    confs2.append(confidence)
+    if confidence < args.threshold:
+        adapt_single(net, img, optimizer, criterion, args.niter, args.batch_size)
+    correctness, _ = test_single(net, img, label)
+    correct_ttl2.append(correctness)
+    if i % 1000 == 999:
+        print("%d%%" % ((i  + 1) * 100 / len(np_all)))
+print('Test error cls %.2f' %((1-mean(correct_ttl2))*100))
+
+print('Restarting network, and running TTL (online) on second curruption...')
+net.load_state_dict(ckpt['net'])
+correct_ttl3 = []
+confs3 = []
+for i in range(0, len(np_all)):
+    label = np_labels[i]
+    img = np_all2[i, ]
+
+    _, confidence = test_single(net, img, label)
+    confs3.append(confidence)
+    if confidence < args.threshold:
+        adapt_single(net, img, optimizer, criterion, args.niter, args.batch_size)
+    correctness, _ = test_single(net, img, label)
+    correct_ttl3.append(correctness)
+    if i % 1000 == 999:
+        print("%d%%" % ((i  + 1) * 100 / len(np_all)))
+print('Test error cls %.2f' %((1-mean(correct_ttl3))*100))
+
+
+rdict = {'cls_correct_original': np.asarray(correct_orig),
+        'cls_original':1-mean(correct_orig),
+        'cls_correct_adapted': np.asarray(correct_ttl),
         'ssh_confide': np.asarray(confs),
-        'cls_original':1-mean(correct),
-        'cls_adapted':1-mean(correct2)
+        'cls_adapted':1-mean(correct_ttl),
+        'cls_correct_adapted2': np.asarray(correct_ttl2),
+        'ssh_confide2': np.asarray(confs2),
+        'cls_adapted2':1-mean(correct_ttl2),
+        'cls_correct_adapted3': np.asarray(correct_ttl3),
+        'ssh_confide3': np.asarray(confs3),
+        'cls_adapted3':1-mean(correct_ttl3)
 }
-torch.save(rdict, args.outf + '/results_%s_%d.pth' %(args.corruption, args.level))
+torch.save(rdict, args.outf + '/results_%s_%s_%d.pth' %(args.corruption, args.corruption2, args.level))
