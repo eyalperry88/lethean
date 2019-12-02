@@ -11,15 +11,11 @@ import torch.utils.data
 
 from utils.rotation import RotateImageFolder
 
-#normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 normalize = transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
-tr_transforms = transforms.Compose([transforms.RandomResizedCrop(224),
-									transforms.RandomHorizontalFlip(),
+tr_transforms = transforms.Compose([transforms.RandomHorizontalFlip(),
 									transforms.ToTensor(),
 									normalize])
-te_transforms = transforms.Compose([transforms.Resize(256),
-									transforms.CenterCrop(224),
-									transforms.ToTensor(),
+te_transforms = transforms.Compose([transforms.ToTensor(),
 									normalize])
 
 rotation_tr_transforms = tr_transforms

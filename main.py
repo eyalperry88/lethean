@@ -39,6 +39,7 @@ norm_layer = gn_helper
 net = resnet18(norm_layer=norm_layer)
 net.to(device)
 net = torch.nn.DataParallel(net)
+
 _, teloader = prepare_test_data(args)
 _, trloader = prepare_train_data(args)
 
