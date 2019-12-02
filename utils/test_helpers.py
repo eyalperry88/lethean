@@ -4,6 +4,8 @@ import torch
 import torch.nn as nn
 from utils.misc import *
 
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
 def test(teloader, model, verbose=False, print_freq=10):
     model.eval()
     batch_time = AverageMeter('Time', ':6.3f')
@@ -12,12 +14,12 @@ def test(teloader, model, verbose=False, print_freq=10):
 
     one_hot = []
     losses = []
-    criterion = nn.CrossEntropyLoss(reduction='none').cuda()
+    criterion = nn.CrossEntropyLoss(reduction='none').to(device)
     end = time.time()
     for i, (inputs, labels) in enumerate(teloader):
         with torch.no_grad():
-            inputs, labels = inputs.cuda(), labels.cuda()
-            outputs = model(inputs)
+            inputs, labels = inputs.to(device), labels.to(device)
+            outputs, _ = model(inputs)
             _, predicted = outputs.max(1)
             losses.append(criterion(outputs, labels).cpu())
             one_hot.append(predicted.eq(labels).cpu())

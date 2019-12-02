@@ -10,9 +10,9 @@ import torchvision.models as models
 import torch.utils.data
 
 from utils.rotation import RotateImageFolder
-from models.SSHead import *
 
-normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+#normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+normalize = transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
 tr_transforms = transforms.Compose([transforms.RandomResizedCrop(224),
 									transforms.RandomHorizontalFlip(),
 									transforms.ToTensor(),
@@ -26,8 +26,8 @@ rotation_tr_transforms = tr_transforms
 rotation_te_transforms = te_transforms
 
 common_corruptions = ['gaussian_noise', 'shot_noise', 'impulse_noise', 'defocus_blur', 'glass_blur',
-	                    'motion_blur', 'zoom_blur', 'snow', 'frost', 'fog',
-	                    'brightness', 'contrast', 'elastic_transform', 'pixelate', 'jpeg_compression']
+						'motion_blur', 'zoom_blur', 'snow', 'frost', 'fog',
+						'brightness', 'contrast', 'elastic_transform', 'pixelate', 'jpeg_compression']
 
 def build_model(args):
 	if args.group_norm == 0:
@@ -56,12 +56,12 @@ def build_model(args):
 		head = nn.Linear(expansion * planes, 4)
 	elif args.shared == 'layer3':
 		ext = extractor_from_layer3(net)
-		head = copy.deepcopy([net.layer4, net.avgpool, 
+		head = copy.deepcopy([net.layer4, net.avgpool,
 								ViewFlatten(), nn.Linear(expansion * planes * width, 4)])
 		head = nn.Sequential(*head)
 	elif args.shared == 'layer2':
 		ext = extractor_from_layer2(net)
-		head = copy.deepcopy([net.layer3, net.layer4, net.avgpool, 
+		head = copy.deepcopy([net.layer3, net.layer4, net.avgpool,
 								ViewFlatten(), nn.Linear(expansion * planes * width, 4)])
 		head = nn.Sequential(*head)
 
@@ -72,7 +72,7 @@ def build_model(args):
 
 class ImagePathFolder(datasets.ImageFolder):
 	def __init__(self, traindir, train_transform):
-		super(ImagePathFolder, self).__init__(traindir, train_transform)	
+		super(ImagePathFolder, self).__init__(traindir, train_transform)
 
 	def __getitem__(self, index):
 		path, _ = self.imgs[index]
@@ -85,39 +85,41 @@ class ImagePathFolder(datasets.ImageFolder):
 
 def prepare_train_data(args):
 	print('Preparing data...')
-	traindir = os.path.join(args.dataroot, 'train')
-	trset = RotateImageFolder(traindir, tr_transforms, original=True, rotation=args.rotation,
-														rotation_transform=rotation_tr_transforms)
+	# traindir = os.path.join(args.dataroot, 'train')
+	# trset = RotateImageFolder(traindir, tr_transforms, original=True, rotation=args.rotation,
+	# 													rotation_transform=rotation_tr_transforms)
+	trset = datasets.CIFAR10(root='./data', train=True, download=True, transform=tr_transforms)
 	trloader = torch.utils.data.DataLoader(trset, batch_size=args.batch_size, shuffle=True,
 													num_workers=args.workers, pin_memory=True)
 	return trset, trloader
 
 def prepare_test_data(args, use_transforms=True):
-	te_transforms_local = te_transforms if use_transforms else None	
-	if not hasattr(args, 'corruption') or args.corruption == 'original':
-		print('Test on the original test set')
-		validdir = os.path.join(args.dataroot, 'val')
-		teset = RotateImageFolder(validdir, te_transforms_local, original=False, rotation=False,
-													rotation_transform=rotation_te_transforms)
+	te_transforms_local = te_transforms if use_transforms else None
+	# if not hasattr(args, 'corruption') or args.corruption == 'original':
+	# 	print('Test on the original test set')
+	# 	validdir = os.path.join(args.dataroot, 'val')
+	# 	teset = RotateImageFolder(validdir, te_transforms_local, original=False, rotation=False,
+	# 												rotation_transform=rotation_te_transforms)
+	#
+	# elif args.corruption in common_corruptions:
+	# 	print('Test on %s level %d' %(args.corruption, args.level))
+	# 	validdir = os.path.join(args.dataroot, 'imagenet-c', args.corruption, str(args.level))
+	# 	teset = RotateImageFolder(validdir, te_transforms_local, original=False, rotation=False,
+	# 												rotation_transform=rotation_te_transforms)
+	#
+	# elif args.corruption == 'video':
+	# 	validdir = os.path.join(args.dataroot, 'val')
+	# 	teset = ImagePathFolder(validdir, te_transforms_local)
+	# else:
+	# 	raise Exception('Corruption not found!')
+	teset = datasets.CIFAR10(root='./data', train=False, download=True, transform=te_transforms_local)
 
-	elif args.corruption in common_corruptions:
-		print('Test on %s level %d' %(args.corruption, args.level))
-		validdir = os.path.join(args.dataroot, 'imagenet-c', args.corruption, str(args.level))
-		teset = RotateImageFolder(validdir, te_transforms_local, original=False, rotation=False,
-													rotation_transform=rotation_te_transforms)
-
-	elif args.corruption == 'video':
-		validdir = os.path.join(args.dataroot, 'val')
-		teset = ImagePathFolder(validdir, te_transforms_local)
-	else:
-		raise Exception('Corruption not found!')
-		
 	if not hasattr(args, 'workers'):
 		args.workers = 1
 	teloader = torch.utils.data.DataLoader(teset, batch_size=args.batch_size, shuffle=False,
 													num_workers=args.workers, pin_memory=True)
 	return teset, teloader
-    
+
 def adjust_learning_rate(optimizer, epoch, args):
 	"""Sets the learning rate to the initial LR decayed by 10 every 30 epochs"""
 	lr = args.lr * (0.1 ** (epoch // 30))
