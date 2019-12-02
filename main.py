@@ -81,16 +81,18 @@ def train(trloader, epoch):
 all_err_cls = []
 all_err_ssh = []
 best = 1
+start_epoch = args.start_epoch
 
 if args.resume is not None:
     print('Resuming from checkpoint..')
     ckpt = torch.load('%s/ckpt.pth' %(args.resume))
     net.load_state_dict(ckpt['net'])
     optimizer.load_state_dict(ckpt['optimizer'])
+    start_epoch = ckpt['epoch'] + 1
     loss = torch.load('%s/loss.pth' %(args.resume))
     all_err_cls, all_err_ssh = loss
 
-for epoch in range(args.start_epoch, args.epochs+1):
+for epoch in range(start_epoch, args.epochs+1):
     adjust_learning_rate(optimizer, epoch, args)
     train(trloader, epoch)
     err_cls = test(teloader, net)
