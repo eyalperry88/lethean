@@ -91,7 +91,7 @@ for i in range(0, len(np_all)):
     _, confidence = test_single(net, img, label)
     confs.append(confidence)
     if confidence < args.threshold:
-		adapt_single(net, img, optimizer, criterion, args.niter, args.batch_size)
+        adapt_single(net, img, optimizer, criterion, args.niter, args.batch_size)
     correctness, _ = test_single(net, img, label)
     correct2.append(correctness)
     if i % 1000 == 999:
@@ -102,7 +102,7 @@ print('Test error cls %.2f' %((1-mean(correct2))*100))
 rdict = {'cls_correct_original': np.asarray(correct),
         'cls_correct_adapted': np.asarray(correct2),
         'ssh_confide': np.asarray(confs),
-		'cls_original':1-mean(correct),
+        'cls_original':1-mean(correct),
         'cls_adapted':1-mean(correct2)
 }
 torch.save(rdict, args.outf + '/results_%s_%d.pth' %(args.corruption, args.level))
