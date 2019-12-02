@@ -14,7 +14,7 @@ from utils.model import resnet18
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--group_norm', default=0, type=int)
+parser.add_argument('--group_norm', default=32, type=int)
 parser.add_argument('--batch_size', default=256, type=int)
 parser.add_argument('--workers', default=8, type=int)
 ########################################################################
@@ -31,7 +31,12 @@ args = parser.parse_args()
 my_makedir(args.outf)
 import torch.backends.cudnn as cudnn
 cudnn.benchmark = True
-net = resnet18()
+
+def gn_helper(planes):
+    return nn.GroupNorm(args.group_norm, planes)
+norm_layer = gn_helper
+
+net = resnet18(norm_layer=norm_layer)
 net.to(device)
 net = torch.nn.DataParallel(net)
 _, teloader = prepare_test_data(args)
