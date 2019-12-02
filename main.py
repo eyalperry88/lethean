@@ -106,5 +106,5 @@ for epoch in range(args.start_epoch, args.epochs+1):
     plot_epochs(all_err_cls, all_err_ssh, args.outf + '/loss.pdf')
 
     state = {'args': args, 'err_cls': err_cls, 'err_ssh': err_ssh,
-    'optimizer': optimizer.state_dict(), 'net': net.state_dict(), 'head': head.state_dict()}
+    'optimizer': optimizer.state_dict(), 'net': net.state_dict()}
     torch.save(state, args.outf + '/ckpt.pth')
