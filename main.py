@@ -80,12 +80,12 @@ def train(trloader, epoch):
 
 all_err_cls = []
 all_err_ssh = []
+best = 1
 
 if args.resume is not None:
     print('Resuming from checkpoint..')
     ckpt = torch.load('%s/ckpt.pth' %(args.resume))
     net.load_state_dict(ckpt['net'])
-    head.load_state_dict(ckpt['head'])
     optimizer.load_state_dict(ckpt['optimizer'])
     loss = torch.load('%s/loss.pth' %(args.resume))
     all_err_cls, all_err_ssh = loss
@@ -105,6 +105,9 @@ for epoch in range(args.start_epoch, args.epochs+1):
     torch.save((all_err_cls, all_err_ssh), args.outf + '/loss.pth')
     plot_epochs(all_err_cls, all_err_ssh, args.outf + '/loss.pdf')
 
-    state = {'args': args, 'err_cls': err_cls, 'err_ssh': err_ssh,
+    state = {'epoch' : epoch, 'args': args, 'err_cls': err_cls, 'err_ssh': err_ssh,
     'optimizer': optimizer.state_dict(), 'net': net.state_dict()}
     torch.save(state, args.outf + '/ckpt.pth')
+    if err_cls < best:
+        best = err_cls
+        torch.save(state, args.outf + '/best.pth')
