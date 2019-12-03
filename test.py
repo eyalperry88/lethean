@@ -9,6 +9,7 @@ from utils.adapt_helpers import *
 from utils.rotation import rotate_batch
 from utils.model import resnet18
 from utils.train_helpers import normalize
+from utils.test_helpers import test
 
 import matplotlib.pyplot as plt
 
@@ -70,7 +71,13 @@ np_all = np.load(args.dataroot + args.corruption + ".npy")
 np_labels = np_labels[((args.level - 1) * 10000):(args.level*10000)]
 np_all = np_all[((args.level - 1) * 10000):(args.level*10000), ]
 
-print('Running original network...')
+print('Loading data... (Corruption: %s, Level: %d)' % (args.corruption2, args.level))
+np_all2 = np.load(args.dataroot + args.corruption2 + ".npy")
+np_all2 = np_all2[((args.level - 1) * 10000):(args.level*10000), ]
+
+_, teloader = prepare_test_data(args)
+
+print('Running original network on the whole corrupted data...')
 correct_orig = []
 for i in range(0, len(np_all)):
     label = np_labels[i]
@@ -82,11 +89,14 @@ for i in range(0, len(np_all)):
         print("%d%%" % ((i  + 1) * 100 / len(np_all)))
 print('Test error cls %.2f' %((1-mean(correct_orig))*100))
 
+err_cls = test(teloader, net)
+print("Original test error: %.2f" % err_cls)
 
-print('Running TTL network (online)...')
+
+print('Running TTL network (online) on first half, with first corruption...')
 correct_ttl = []
 confs = []
-for i in range(0, len(np_all)):
+for i in range(0, len(np_all) // 2):
     label = np_labels[i]
     img = np_all[i, ]
 
@@ -100,16 +110,13 @@ for i in range(0, len(np_all)):
         print("%d%%" % ((i  + 1) * 100 / len(np_all)))
 print('Test error cls %.2f' %((1-mean(correct_ttl))*100))
 
+err_cls = test(teloader, net)
+print("Original test error: %.2f" % err_cls)
 
-print('Loading data... (Corruption: %s, Level: %d)' % (args.corruption2, args.level))
-np_all2 = np.load(args.dataroot + args.corruption2 + ".npy")
-np_all2 = np_all2[((args.level - 1) * 10000):(args.level*10000), ]
-
-
-print('Running TTL network (online) on second curruption...')
+print('Running TTL network (online) on second half, with second corruption...')
 correct_ttl2 = []
 confs2 = []
-for i in range(0, len(np_all)):
+for i in range(len(np_all) // 2, len(np_all)):
     label = np_labels[i]
     img = np_all2[i, ]
 
@@ -123,36 +130,8 @@ for i in range(0, len(np_all)):
         print("%d%%" % ((i  + 1) * 100 / len(np_all)))
 print('Test error cls %.2f' %((1-mean(correct_ttl2))*100))
 
-print('Restarting network, and running original on second corruption...')
-net.load_state_dict(ckpt['net'])
-correct_orig2 = []
-for i in range(0, len(np_all)):
-    label = np_labels[i]
-    img = np_all[i, ]
-
-    correctness, _ = test_single(net, img, label)
-    correct_orig2.append(correctness)
-    if i % 1000 == 999:
-        print("%d%%" % ((i  + 1) * 100 / len(np_all)))
-print('Test error cls %.2f' %((1-mean(correct_orig2))*100))
-
-print('Running TTL on second corruption...')
-correct_ttl3 = []
-confs3 = []
-for i in range(0, len(np_all)):
-    label = np_labels[i]
-    img = np_all2[i, ]
-
-    _, confidence = test_single(net, img, label)
-    confs3.append(confidence)
-    if confidence < args.threshold:
-        adapt_single(net, img, optimizer, criterion, args.niter, args.batch_size)
-    correctness, _ = test_single(net, img, label)
-    correct_ttl3.append(correctness)
-    if i % 1000 == 999:
-        print("%d%%" % ((i  + 1) * 100 / len(np_all)))
-print('Test error cls %.2f' %((1-mean(correct_ttl3))*100))
-
+err_cls = test(teloader, net)
+print("Original test error: %.2f" % err_cls)
 
 rdict = {'cls_correct_original': np.asarray(correct_orig),
         'cls_original':1-mean(correct_orig),
@@ -162,10 +141,5 @@ rdict = {'cls_correct_original': np.asarray(correct_orig),
         'cls_correct_adapted2': np.asarray(correct_ttl2),
         'ssh_confide2': np.asarray(confs2),
         'cls_adapted2':1-mean(correct_ttl2),
-        'cls_correct_original2': np.asarray(correct_orig2),
-        'cls_original2':1-mean(correct_orig2),
-        'cls_correct_adapted3': np.asarray(correct_ttl3),
-        'ssh_confide3': np.asarray(confs3),
-        'cls_adapted3':1-mean(correct_ttl3)
 }
 torch.save(rdict, args.outf + '/results_%s_%s_%d.pth' %(args.corruption, args.corruption2, args.level))
