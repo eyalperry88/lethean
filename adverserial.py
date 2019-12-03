@@ -81,7 +81,7 @@ def fgsm_attack(image, epsilon, data_grad):
 
 for i in range(len(teset)):
     img = teset[i][0].unsqueeze(0).to(device)
-    img.require_grad = True
+    img.requires_grad = True
 
     _, outputs_ssh = net(img)
     label = torch.zeros((1,), dtype=torch.long).to(device)
