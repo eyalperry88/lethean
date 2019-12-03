@@ -80,9 +80,8 @@ def fgsm_attack(image, epsilon, data_grad):
     return perturbed_image
 
 for i in range(len(teset)):
-    img = teset[i][0]
-    inputs = te_transforms(img).unsqueeze(0).to(device)
-    inputs.require_grad = True
+    img = teset[i][0].unsqueeze(0).to(device)
+    img.require_grad = True
 
     _, outputs_ssh = net(img)
     loss = criterion(outputs_ssh, 0)
@@ -93,8 +92,13 @@ for i in range(len(teset)):
 
     data_grad = data.grad.data
 
+    print("data_grad.size()"")
+    print(data_grad.size())
+
     # Call FGSM Attack
     perturbed_img = fgsm_attack(img, args.epsilon, data_grad)
+    print("perturbed_img.size()")
+    print(perturbed_img.size())
 
     adapt_single(net, perturbed_img, optimizer, criterion, args.niter, args.batch_size)
 
