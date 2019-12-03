@@ -92,7 +92,7 @@ for i in range(len(teset)):
 
     data_grad = data.grad.data
 
-    print("data_grad.size()"")
+    print("data_grad.size()")
     print(data_grad.size())
 
     # Call FGSM Attack
