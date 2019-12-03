@@ -78,7 +78,7 @@ np_all2 = np_all2[((args.level - 1) * 10000):(args.level*10000), ]
 
 print('Loading data... (Corruption: %s, Level: %d)' % (args.corruption3, args.level))
 np_all3 = np.load(args.dataroot + args.corruption3 + ".npy")
-np_all3 = np_all2[((args.level - 1) * 10000):(args.level*10000), ]
+np_all3 = np_all3[((args.level - 1) * 10000):(args.level*10000), ]
 
 _, teloader = prepare_test_data(args)
 
