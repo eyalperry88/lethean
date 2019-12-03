@@ -91,7 +91,7 @@ for i in range(len(teset)):
 
     loss.backward()
 
-    data_grad = data.grad.data
+    data_grad = img.grad.data
 
     print("data_grad.size()")
     print(data_grad.size())
