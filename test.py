@@ -89,6 +89,18 @@ for i in range(0, len(np_all)):
         print("%d%%" % ((i  + 1) * 100 / len(np_all)))
 print('Test error cls %.2f' %((1-mean(correct_orig))*100))
 
+print('Running original network on the whole corrupted (2) data...')
+correct_orig2 = []
+for i in range(0, len(np_all)):
+    label = np_labels[i]
+    img = np_all2[i, ]
+
+    correctness, _ = test_single(net, img, label)
+    correct_orig2.append(correctness)
+    if i % 1000 == 999:
+        print("%d%%" % ((i  + 1) * 100 / len(np_all2)))
+print('Test error cls %.2f' %((1-mean(correct_orig2))*100))
+
 err_cls = test(teloader, net)
 print("Original test error: %.2f" % err_cls)
 
