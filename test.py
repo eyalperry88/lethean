@@ -75,6 +75,10 @@ print('Loading data... (Corruption: %s, Level: %d)' % (args.corruption2, args.le
 np_all2 = np.load(args.dataroot + args.corruption2 + ".npy")
 np_all2 = np_all2[((args.level - 1) * 10000):(args.level*10000), ]
 
+print('Loading data... (Corruption: %s, Level: %d)' % (args.corruption3, args.level))
+np_all3 = np.load(args.dataroot + args.corruption3 + ".npy")
+np_all3 = np_all2[((args.level - 1) * 10000):(args.level*10000), ]
+
 _, teloader = prepare_test_data(args)
 
 print('Running original network on the whole corrupted data...')
@@ -101,57 +105,45 @@ for i in range(0, len(np_all)):
         print("%d%%" % ((i  + 1) * 100 / len(np_all2)))
 print('Test error cls %.2f' %((1-mean(correct_orig2))*100))
 
-err_cls = test(teloader, net)
-print("Original test error: %.2f" % err_cls)
-
-
-print('Running TTL network (online) on first half, with first corruption...')
-correct_ttl = []
-confs = []
-for i in range(0, len(np_all) // 2):
+print('Running original network on the whole corrupted (2) data...')
+correct_orig3 = []
+for i in range(0, len(np_all)):
     label = np_labels[i]
-    img = np_all[i, ]
+    img = np_all3[i, ]
 
-    _, confidence = test_single(net, img, label)
-    confs.append(confidence)
-    if confidence < args.threshold:
-        adapt_single(net, img, optimizer, criterion, args.niter, args.batch_size)
     correctness, _ = test_single(net, img, label)
-    correct_ttl.append(correctness)
+    correct_orig3.append(correctness)
     if i % 1000 == 999:
-        print("%d%%" % ((i  + 1) * 100 / len(np_all)))
-print('Test error cls %.2f' %((1-mean(correct_ttl))*100))
+        print("%d%%" % ((i  + 1) * 100 / len(np_all2)))
+print('Test error cls %.2f' %((1-mean(correct_orig3))*100))
 
 err_cls = test(teloader, net)
 print("Original test error: %.2f" % err_cls)
 
-print('Running TTL network (online) on second half, with second corruption...')
-correct_ttl2 = []
-confs2 = []
-for i in range(len(np_all) // 2, len(np_all)):
-    label = np_labels[i]
-    img = np_all2[i, ]
+for j in range(10):
+    if j % 3 == 0:
+        crpt = args.corruption
+        crpt_data = np_all
+    elif j % 3 == 1:
+        crpt = args.corruption2
+        crpt_data = np_all2
+    else:
+        crpt = args.corruption3
+        crpt_data = np_all3
+    print('Running TTL network (online) #%d, with corruption %s...' % (j, crpt))
+    correct_ttl = []
+    confs = []
+    for i in range(j * 1000, (j + 1) * 1000):
+        label = np_labels[i]
+        img = crpt_data[i, ]
 
-    _, confidence = test_single(net, img, label)
-    confs2.append(confidence)
-    if confidence < args.threshold:
-        adapt_single(net, img, optimizer, criterion, args.niter, args.batch_size)
-    correctness, _ = test_single(net, img, label)
-    correct_ttl2.append(correctness)
-    if i % 1000 == 999:
-        print("%d%%" % ((i  + 1) * 100 / len(np_all)))
-print('Test error cls %.2f' %((1-mean(correct_ttl2))*100))
+        _, confidence = test_single(net, img, label)
+        confs.append(confidence)
+        if confidence < args.threshold:
+            adapt_single(net, img, optimizer, criterion, args.niter, args.batch_size)
+        correctness, _ = test_single(net, img, label)
+        correct_ttl.append(correctness)
+    print('Done, Test error cls %.2f' %((1-mean(correct_ttl))*100))
 
-err_cls = test(teloader, net)
-print("Original test error: %.2f" % err_cls)
-
-rdict = {'cls_correct_original': np.asarray(correct_orig),
-        'cls_original':1-mean(correct_orig),
-        'cls_correct_adapted': np.asarray(correct_ttl),
-        'ssh_confide': np.asarray(confs),
-        'cls_adapted':1-mean(correct_ttl),
-        'cls_correct_adapted2': np.asarray(correct_ttl2),
-        'ssh_confide2': np.asarray(confs2),
-        'cls_adapted2':1-mean(correct_ttl2),
-}
-torch.save(rdict, args.outf + '/results_%s_%s_%d.pth' %(args.corruption, args.corruption2, args.level))
+    err_cls = test(teloader, net)
+    print("Original test error: %.2f" % err_cls)
