@@ -93,15 +93,16 @@ for i in range(len(teset)):
 
     data_grad = img.grad.data
 
-    print("data_grad.size()")
-    print(data_grad.size())
-
     # Call FGSM Attack
     perturbed_img = fgsm_attack(img, args.epsilon, data_grad)
-    print("perturbed_img.size()")
-    print(perturbed_img.size())
 
-    adapt_single(net, perturbed_img, optimizer, criterion, args.niter, args.batch_size)
+    net.train()
+    optimizer.zero_grad()
+
+    _, ssh = net(perturbed_img)
+    loss = criterion(ssh, label)
+    loss.backward()
+    optimizer.step()
 
     if i % 1000 == 999:
         print("%d%%" % ((i  + 1) * 100 / len(teset)))
