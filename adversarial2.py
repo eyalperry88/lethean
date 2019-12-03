@@ -3,6 +3,7 @@ import argparse
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import random
 
 from utils.misc import *
 from utils.adapt_helpers import *
@@ -58,14 +59,24 @@ optimizer = optim.SGD(net.parameters(), lr=args.lr)
 
 teset, teloader = prepare_test_data(args)
 
-evil_image = np.zeros((32, 32, 3), dtype=int)
-evil_image[:16, :16, :] = 255
+np_all = np.load(args.dataroot + "gaussian_noise.npy")
+np_all = np_all[0:10000, ]
 
 for i in range(args.epochs):
-    _, confidence = test_single(net, evil_image, 0)
+    idx = random.randint(0, len(teset) - 1)
+    img = np_all[idx]
+    print(img[:5, :5, :])
+    img[0, 0:5, :] = 1
+    img[1, 0:5, :] = 0
+    img[2, 0:5, :] = 1
+    img[3, 0:5, :] = 0
+    img[4, 0:5, :] = 1
+    print(img[:5, :5, :])
+    break
+    _, confidence = test_single(net, img, 0)
     print("Confidence: ", confidence)
     if confidence < args.threshold:
-        adapt_single(net, evil_image, optimizer, criterion, args.niter, args.batch_size)
+        adapt_single(net, img, optimizer, criterion, args.niter, args.batch_size)
 
 err_cls = test(teloader, net)
 print("Original test error: %.2f" % err_cls)
