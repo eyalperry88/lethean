@@ -76,5 +76,7 @@ for i in range(args.epochs):
     if confidence < args.threshold:
         adapt_single(net, img, optimizer, criterion, args.niter, args.batch_size)
 
-err_cls = test(teloader, net)
-print("Original test error: %.2f" % err_cls)
+    if i % 1000 == 999:
+        print("%d%%" % ((i  + 1) * 100 / args.epochs))
+        err_cls = test(teloader, net)
+        print("Original test error: %.2f" % err_cls)
