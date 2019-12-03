@@ -65,14 +65,11 @@ np_all = np_all[0:10000, ]
 for i in range(args.epochs):
     idx = random.randint(0, len(teset) - 1)
     img = np_all[idx]
-    print(img[:5, :5, :])
-    img[0, 0:5, :] = 1
+    img[0, 0:5, :] = 255
     img[1, 0:5, :] = 0
-    img[2, 0:5, :] = 1
+    img[2, 0:5, :] = 255
     img[3, 0:5, :] = 0
-    img[4, 0:5, :] = 1
-    print(img[:5, :5, :])
-    break
+    img[4, 0:5, :] = 255
     _, confidence = test_single(net, img, 0)
     print("Confidence: ", confidence)
     if confidence < args.threshold:
