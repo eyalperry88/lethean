@@ -28,6 +28,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--level', default=0, type=int)
 parser.add_argument('--corruption', default='original')
 parser.add_argument('--corruption2', default='original')
+parser.add_argument('--corruption3', default='original')
 parser.add_argument('--dataroot', default='data/CIFAR-10-C/')
 parser.add_argument('--shared', default=None)
 ########################################################################
