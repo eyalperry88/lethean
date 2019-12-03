@@ -8,7 +8,7 @@ from utils.misc import *
 from utils.adapt_helpers import *
 from utils.rotation import rotate_batch
 from utils.model import resnet18
-from utils.train_helpers import normalize
+from utils.train_helpers import normalize, te_transforms
 from utils.test_helpers import test
 
 import matplotlib.pyplot as plt
@@ -81,7 +81,8 @@ def fgsm_attack(image, epsilon, data_grad):
 
 for i in range(len(teset)):
     img = teset[i][0]
-    img.require_grad = True
+    inputs = te_transforms(img).unsqueeze(0).to(device)
+    inputs.require_grad = True
 
     _, outputs_ssh = net(img)
     loss = criterion(outputs_ssh, 0)
