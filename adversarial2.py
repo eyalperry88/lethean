@@ -62,6 +62,7 @@ teset, teloader = prepare_test_data(args)
 np_all = np.load(args.dataroot + "gaussian_noise.npy")
 np_all = np_all[0:10000, ]
 
+confs = []
 for i in range(args.epochs):
     idx = random.randint(0, len(teset) - 1)
     img = np_all[idx]
@@ -71,7 +72,7 @@ for i in range(args.epochs):
     img[3, 0:5, :] = 0
     img[4, 0:5, :] = 255
     _, confidence = test_single(net, img, 0)
-    print("Confidence: ", confidence)
+    confs.append(confidence)
     if confidence < args.threshold:
         adapt_single(net, img, optimizer, criterion, args.niter, args.batch_size)
 
