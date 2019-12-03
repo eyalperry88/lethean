@@ -29,7 +29,7 @@ def test(teloader, model, verbose=False, print_freq=10):
         batch_time.update(time.time() - end)
         end = time.time()
 
-        if i % print_freq == 0:
+        if print_freq > 0 and i % print_freq == 0:
             progress.print(i)
     print(' * Acc@1 {top1.avg:.3f}'.format(top1=top1))
 
