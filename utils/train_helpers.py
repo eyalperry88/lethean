@@ -91,7 +91,7 @@ def prepare_train_data(args):
 													num_workers=args.workers, pin_memory=True)
 	return trset, trloader
 
-def prepare_test_data(args, use_transforms=True):
+def prepare_test_data(args, use_transforms=True, shuffle=False):
 	te_transforms_local = te_transforms if use_transforms else None
 	# if not hasattr(args, 'corruption') or args.corruption == 'original':
 	# 	print('Test on the original test set')
@@ -114,7 +114,7 @@ def prepare_test_data(args, use_transforms=True):
 
 	if not hasattr(args, 'workers'):
 		args.workers = 1
-	teloader = torch.utils.data.DataLoader(teset, batch_size=args.batch_size, shuffle=False,
+	teloader = torch.utils.data.DataLoader(teset, batch_size=args.batch_size, shuffle=shuffle,
 													num_workers=args.workers, pin_memory=True)
 	return teset, teloader
 
