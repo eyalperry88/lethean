@@ -58,8 +58,8 @@ optimizer = optim.SGD(net.parameters(), lr=args.lr)
 
 teset, teloader = prepare_test_data(args)
 
-evil_image = np.zeros((32, 32, 3))
-evil_image[:16, :16, :] = 1.
+evil_image = np.zeros((32, 32, 3), dtype=int)
+evil_image[:16, :16, :] = 255
 
 for i in range(args.epochs):
     _, confidence = test_single(net, evil_image, 0)
