@@ -64,7 +64,6 @@ evil_image[:16, :16, :] = 255
 for i in range(args.epochs):
     _, confidence = test_single(net, evil_image, 0)
     print("Confidence: ", confidence)
-    confs.append(confidence)
     if confidence < args.threshold:
         adapt_single(net, evil_image, optimizer, criterion, args.niter, args.batch_size)
 
