@@ -84,7 +84,8 @@ for i in range(len(teset)):
     img.require_grad = True
 
     _, outputs_ssh = net(img)
-    loss = criterion(outputs_ssh, 0)
+    label = torch.zeros((1,), dtype=torch.long)
+    loss = criterion(outputs_ssh, label)
 
     net.zero_grad()
 
