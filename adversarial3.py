@@ -79,7 +79,7 @@ for i in range(len(trset)):
 
     count += 1
     if count % 1000 == 0:
-        print("%d%%" % (i * 100 / 5000))
+        print("%d%%" % (count * 100 / 5000))
         err_cls, correct_per_cls, total_per_cls = test(teloader, net, verbose=True, print_freq=0)
-        for i in range(len(classes)):
-            print("Class %s Accuracy %.2f" % (classes[i], correct_per_cls[i] * 100 / total_per_cls[i]))
+        for j in range(len(classes)):
+            print("Class %s Accuracy %.2f" % (classes[j], correct_per_cls[j] * 100 / total_per_cls[j]))
