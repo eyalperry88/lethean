@@ -31,6 +31,18 @@ def adapt_single(model, image, optimizer, criterion, niter, batch_size):
 		loss.backward()
 		optimizer.step()
 
+def adapt_single_tensor(model, tensor, optimizer, criterion, niter, batch_size):
+	model.train()
+	for iteration in range(niter):
+		inputs = [tensor for _ in range(batch_size)]
+		inputs, labels = rotate_batch(inputs)
+		inputs, labels = inputs.to(device), labels.to(device)
+		optimizer.zero_grad()
+		_, ssh = model(inputs)
+		loss = criterion(ssh, labels)
+		loss.backward()
+		optimizer.step()
+
 def test_single(model, image, label):
 	model.eval()
 	inputs = te_transforms(image).unsqueeze(0)

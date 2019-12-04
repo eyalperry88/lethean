@@ -75,7 +75,7 @@ for i in range(len(trset)):
 
     random_rot = random.randint(1, 3)
     rot_img = rotate_single_with_label(img, random_rot)
-    adapt_single(net, rot_img, optimizer, criterion, args.niter, args.batch_size)
+    adapt_single_tensor(net, rot_img, optimizer, criterion, args.niter, args.batch_size)
 
     count += 1
     if count % 1000 == 0:
