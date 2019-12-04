@@ -27,7 +27,7 @@ parser.add_argument('--batch_size', default=32, type=int)
 parser.add_argument('--workers', default=8, type=int)
 ########################################################################
 parser.add_argument('--lr', default=0.001, type=float)
-parser.add_argument('--niter', default=10, type=int)
+parser.add_argument('--niter', default=1, type=int)
 parser.add_argument('--online', action='store_true')
 parser.add_argument('--shuffle', action='store_true')
 parser.add_argument('--threshold', default=1, type=float)
@@ -54,6 +54,7 @@ net = torch.nn.DataParallel(net)
 print('Resuming from %s...' %(args.resume))
 ckpt = torch.load('%s/best.pth' %(args.resume))
 net.load_state_dict(ckpt['net'])
+print("Starting Test Error: %.3f" % ckpt['err_cls'])
 
 criterion = nn.CrossEntropyLoss().to(device)
 optimizer = optim.SGD(net.parameters(), lr=args.lr)
@@ -61,25 +62,15 @@ optimizer = optim.SGD(net.parameters(), lr=args.lr)
 trset, trloader = prepare_train_data(args)
 teset, teloader = prepare_test_data(args)
 
-err_cls, correct_per_cls, total_per_cls = test(teloader, net, verbose=True, print_freq=0)
-for i in range(len(classes)):
-    print("Class %s Accuracy %.2f" % (classes[i], correct_per_cls[i] * 100 / total_per_cls[i]))
-
-forget_label = 7
-count = 0
-print("Trying to induce forgetfulness ")
-for i in range(len(trset)):
-    img, lbl = trset[i]
-    if lbl != forget_label:
-        continue
-
+print("Lethean Attack")
+for i in range(args.epochs):
+    idx = random.randint(0, len(trset) - 1)
+    img, lbl = trset[idx]
     random_rot = random.randint(1, 3)
     rot_img = rotate_single_with_label(img, random_rot)
     adapt_single_tensor(net, rot_img, optimizer, criterion, args.niter, args.batch_size)
 
-    count += 1
-    if count % 1000 == 0:
+    if i % 100 == 0:
         print("%d%%" % (count * 100 / 5000))
         err_cls, correct_per_cls, total_per_cls = test(teloader, net, verbose=True, print_freq=0)
-        for j in range(len(classes)):
-            print("Class %s Accuracy %.2f" % (classes[j], correct_per_cls[j] * 100 / total_per_cls[j]))
+        print("Epoch %d Test error: %.3f" % (i, err_cls))
