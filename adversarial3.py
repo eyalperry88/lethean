@@ -70,7 +70,7 @@ for i in range(args.epochs):
     rot_img = rotate_single_with_label(img, random_rot)
     adapt_single_tensor(net, rot_img, optimizer, criterion, args.niter, args.batch_size)
 
-    if i % 100 == 99:
+    if i % 50 == 49:
         print("%d%%" % ((i + 1) * 100 / 5000))
         err_cls, correct_per_cls, total_per_cls = test(teloader, net, verbose=True, print_freq=0)
         print("Epoch %d Test error: %.3f" % (i, err_cls))
