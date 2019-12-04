@@ -26,10 +26,10 @@ def test(teloader, model, verbose=False, print_freq=10):
             losses.append(criterion(outputs, labels).cpu())
             one_hot.append(predicted.eq(labels).cpu())
 
-        for i in range(len(labels)):
-            lbl = labels[i]
+        for j in range(len(labels)):
+            lbl = labels[j]
             total_per_class[lbl] += 1
-            correct_per_class[lbl] += int(one_hot[-1][i].item())
+            correct_per_class[lbl] += int(one_hot[-1][j].item())
         acc1 = one_hot[-1].sum().item() / len(labels)
         top1.update(acc1, len(labels))
         batch_time.update(time.time() - end)

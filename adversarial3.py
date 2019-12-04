@@ -7,7 +7,7 @@ import random
 
 from utils.misc import *
 from utils.adapt_helpers import *
-from utils.rotation import rotate_batch
+from utils.rotation import rotate_batch, rotate_single_with_label
 from utils.model import resnet18
 from utils.train_helpers import normalize, te_transforms
 from utils.test_helpers import test
@@ -57,8 +57,28 @@ net.load_state_dict(ckpt['net'])
 criterion = nn.CrossEntropyLoss().to(device)
 optimizer = optim.SGD(net.parameters(), lr=args.lr)
 
+trset, trloader = prepare_train_data(args)
 teset, teloader = prepare_test_data(args)
 
-err_cls, correct_per_cls, total_per_cls = test(teloader, net, verbose=True)
+err_cls, correct_per_cls, total_per_cls = test(teloader, net, verbose=True, print_freq=0)
 for i in range(len(classes)):
     print("Class %s Accuracy %.2f" % (classes[i], correct_per_cls[i] * 100 / total_per_cls[i]))
+
+forget_label = 7
+count = 0
+print("Trying to induce forgetfulness ")
+for i in range(len(trset)):
+    img, lbl = trset[i]
+    if lbl != forget_label:
+        continue
+
+    random_rot = random.randint(1, 3)
+    rot_img = rotate_single_with_label(img, random_rot)
+    adapt_single(net, rot_img, optimizer, criterion, args.niter, args.batch_size)
+
+    count += 1
+    if count % 1000 == 0:
+        print("%d%%" % (i * 100 / 5000))
+        err_cls, correct_per_cls, total_per_cls = test(teloader, net, verbose=True, print_freq=0)
+        for i in range(len(classes)):
+            print("Class %s Accuracy %.2f" % (classes[i], correct_per_cls[i] * 100 / total_per_cls[i]))
