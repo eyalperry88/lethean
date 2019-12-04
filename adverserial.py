@@ -62,6 +62,7 @@ net = torch.nn.DataParallel(net)
 print('Resuming from %s...' %(args.resume))
 ckpt = torch.load('%s/best.pth' %(args.resume))
 net.load_state_dict(ckpt['net'])
+print("Epoch:", ckpt['epoch'], "Error:", ckpt['err_cls'])
 
 criterion = nn.CrossEntropyLoss().to(device)
 optimizer = optim.SGD(net.parameters(), lr=args.lr)
@@ -84,7 +85,7 @@ for i in range(len(teset)):
     img.requires_grad = True
 
     _, outputs_ssh = net(img)
-    label = torch.zeros((1,), dtype=torch.long).to(device)
+    label = torch.ones((1,), dtype=torch.long).to(device)
     loss = criterion(outputs_ssh, label)
 
     net.zero_grad()
