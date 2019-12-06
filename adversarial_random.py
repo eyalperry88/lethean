@@ -70,7 +70,7 @@ _, teloader = prepare_test_data(args)
 
 print("Random Attack...")
 for i in range(args.epochs):
-    img = np.random.randint(0, 256, (3, 32, 32))
+    img = np.random.randint(0, 256, (32, 32, 3))
     adapt_single(net, img, optimizer, criterion, args.niter, args.batch_size)
 
     if i % 50 == 49:
