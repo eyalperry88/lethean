@@ -88,8 +88,9 @@ for i in range(args.epochs):
     lbl = torch.LongTensor([trset[idx][1]]).to(device)
     img.requires_grad = True
 
-    output, _ = net(img)
-    loss = criterion(output, lbl)
+    output, output_ssh = net(img)
+    lbl = torch.zeros((1,), dtype=torch.long)
+    loss = criterion(output_ssh, lbl)
     net.zero_grad()
     loss.backward()
     data_grad = img.grad.data
