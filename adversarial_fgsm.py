@@ -95,8 +95,8 @@ for i in range(args.epochs):
     data_grad = img.grad.data
 
     # Call FGSM Attack
-    print(img.size())
     perturbed_img = fgsm_attack(img, args.epsilon, data_grad)
+    print(perturbed_img.size())
     adapt_single_tensor(net, perturbed_img, optimizer, criterion, args.niter, args.batch_size)
 
     if i % 50 == 49:
