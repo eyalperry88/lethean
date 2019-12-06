@@ -85,7 +85,7 @@ print("FGSM Attack")
 for i in range(args.epochs):
     idx = random.randint(0, len(trset) - 1)
     img = trset[idx][0].unsqueeze(0).to(device)
-    lbl = torch.LongTensor(trset[idx][1]).to(device)
+    lbl = torch.LongTensor(trset[idx][1]).unsqueeze(0).to(device)
     print(lbl.size())
     print(img.size())
     img.requires_grad = True
