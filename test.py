@@ -43,6 +43,7 @@ parser.add_argument('--dset_size', default=0, type=int)
 ########################################################################
 parser.add_argument('--resume', default=None)
 parser.add_argument('--outf', default='.')
+parser.add_argument('--epochs', default=10, type=int)
 
 args = parser.parse_args()
 args.threshold += 0.001		# to correct for numeric errors
