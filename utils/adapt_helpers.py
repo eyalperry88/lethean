@@ -35,13 +35,21 @@ def adapt_single_tensor(model, tensor, optimizer, criterion, niter, batch_size):
 	model.train()
 	for iteration in range(niter):
 		inputs = [tensor for _ in range(batch_size)]
+        print("a")
 		inputs, labels = rotate_batch(inputs)
+        print("b")
 		inputs, labels = inputs.to(device), labels.to(device)
+        print("c")
 		optimizer.zero_grad()
+        print("d")
 		_, ssh = model(inputs)
+        print("e")
 		loss = criterion(ssh, labels)
+        print("f")
 		loss.backward()
+        print("g")
 		optimizer.step()
+        print("h")
 
 def test_single(model, image, label):
 	model.eval()
