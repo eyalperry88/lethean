@@ -22,6 +22,7 @@ def trerr_single(model, image):
 def adapt_single(model, image, optimizer, criterion, niter, batch_size):
 	model.train()
 	for iteration in range(niter):
+		print("o")
 		inputs = [te_transforms(image) for _ in range(batch_size)]
 		print("a")
 		inputs, labels = rotate_batch(inputs)
