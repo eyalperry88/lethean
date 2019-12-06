@@ -38,7 +38,6 @@ def adapt_single_tensor(model, tensor, optimizer, criterion, niter, batch_size):
 		inputs, labels = rotate_batch(inputs)
 		inputs, labels = inputs.to(device), labels.to(device)
 		optimizer.zero_grad()
-		print(inputs.size())
 		_, ssh = model(inputs)
 		loss = criterion(ssh, labels)
 		loss.backward()
