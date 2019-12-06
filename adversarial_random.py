@@ -70,8 +70,12 @@ _, teloader = prepare_test_data(args)
 
 print("Random Attack...")
 for i in range(args.epochs):
-    img = (np.random.normal(0.5, 0.2, (32, 32, 3)) * 255).astype(int)
-    adapt_single(net, img, optimizer, criterion, args.niter, args.batch_size)
+    r = np.random.normal(0.4914, 0.2023, (32, 32))
+    g = np.random.normal(0.4822, 0.1994, (32, 32))
+    b = np.random.normal(0.4465, 0.2010, (32, 32))
+    img = np.stack([r, g, b], axis=-1)
+    tensor = torch.from_numpy(img)
+    adapt_single_tensor(net, tensor, optimizer, criterion, args.niter, args.batch_size)
 
     if i % 50 == 49:
         print("%d%%" % ((i + 1) * 100 / 5000))
