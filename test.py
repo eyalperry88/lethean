@@ -68,83 +68,19 @@ optimizer = optim.SGD(net.parameters(), lr=args.lr)
 
 print('Loading data... (Corruption: %s, Level: %d)' % (args.corruption, args.level))
 np_labels = np.load(args.dataroot + "labels.npy")
-np_all = np.load(args.dataroot + args.corruption + ".npy")
 np_labels = np_labels[((args.level - 1) * 10000):(args.level*10000)]
-np_all = np_all[((args.level - 1) * 10000):(args.level*10000), ]
-
-print('Loading data... (Corruption: %s, Level: %d)' % (args.corruption2, args.level))
-np_all2 = np.load(args.dataroot + args.corruption2 + ".npy")
-np_all2 = np_all2[((args.level - 1) * 10000):(args.level*10000), ]
-
-print('Loading data... (Corruption: %s, Level: %d)' % (args.corruption3, args.level))
-np_all3 = np.load(args.dataroot + args.corruption3 + ".npy")
-np_all3 = np_all3[((args.level - 1) * 10000):(args.level*10000), ]
+np_corrupt = np.load(args.dataroot + args.corruption + ".npy")
+np_corrupt = np_corrupt[((args.level - 1) * 10000):(args.level*10000), ]
 
 _, teloader = prepare_test_data(args)
 
-print('Running original network on the whole corrupted data...')
-correct_orig = []
-for i in range(0, len(np_all)):
-    label = np_labels[i]
-    img = np_all[i, ]
+print("Testing...")
+for i in range(args.epochs):
+    idx = random.randint(0, len(np_corrupt) - 1)
+    img = np_corrupt[idx, ]
+    adapt_single(net, img, optimizer, criterion, args.niter, args.batch_size)
 
-    correctness, _ = test_single(net, img, label)
-    correct_orig.append(correctness)
-    if i % 1000 == 999:
-        print("%d%%" % ((i  + 1) * 100 / len(np_all)))
-print('Test error cls %.2f' %((1-mean(correct_orig))*100))
-
-print('Running original network on the whole corrupted (2) data...')
-correct_orig2 = []
-for i in range(0, len(np_all)):
-    label = np_labels[i]
-    img = np_all2[i, ]
-
-    correctness, _ = test_single(net, img, label)
-    correct_orig2.append(correctness)
-    if i % 1000 == 999:
-        print("%d%%" % ((i  + 1) * 100 / len(np_all2)))
-print('Test error cls %.2f' %((1-mean(correct_orig2))*100))
-
-print('Running original network on the whole corrupted (2) data...')
-correct_orig3 = []
-for i in range(0, len(np_all)):
-    label = np_labels[i]
-    img = np_all3[i, ]
-
-    correctness, _ = test_single(net, img, label)
-    correct_orig3.append(correctness)
-    if i % 1000 == 999:
-        print("%d%%" % ((i  + 1) * 100 / len(np_all2)))
-print('Test error cls %.2f' %((1-mean(correct_orig3))*100))
-
-err_cls = test(teloader, net)
-print("Original test error: %.2f" % err_cls)
-
-for j in range(10):
-    if j % 3 == 0:
-        crpt = args.corruption
-        crpt_data = np_all
-    elif j % 3 == 1:
-        crpt = args.corruption2
-        crpt_data = np_all2
-    else:
-        crpt = args.corruption3
-        crpt_data = np_all3
-    print('Running TTL network (online) #%d, with corruption %s...' % (j, crpt))
-    correct_ttl = []
-    confs = []
-    for i in range(j * 1000, (j + 1) * 1000):
-        label = np_labels[i]
-        img = crpt_data[i, ]
-
-        _, confidence = test_single(net, img, label)
-        confs.append(confidence)
-        if confidence < args.threshold:
-            adapt_single(net, img, optimizer, criterion, args.niter, args.batch_size)
-        correctness, _ = test_single(net, img, label)
-        correct_ttl.append(correctness)
-    print('Done, Test error cls %.2f' %((1-mean(correct_ttl))*100))
-
-    err_cls = test(teloader, net)
-    print("Original test error: %.2f" % err_cls)
+    if i % 50 == 49:
+        print("%d%%" % ((i + 1) * 100 / 5000))
+        err_cls, correct_per_cls, total_per_cls = test(teloader, net, verbose=True, print_freq=0)
+        print("Epoch %d Test error: %.3f" % (i, err_cls))
