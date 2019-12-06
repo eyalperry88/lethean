@@ -3,6 +3,7 @@ import argparse
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import random
 
 from utils.misc import *
 from utils.adapt_helpers import *
