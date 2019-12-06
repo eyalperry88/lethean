@@ -96,7 +96,7 @@ for i in range(args.epochs):
 
     # Call FGSM Attack
     perturbed_img = fgsm_attack(img, args.epsilon, data_grad)
-    print(perturbed_img.size())
+    perturbed_img = torch.squeeze(perturbed_img)
     adapt_single_tensor(net, perturbed_img, optimizer, criterion, args.niter, args.batch_size)
 
     if i % 50 == 49:
