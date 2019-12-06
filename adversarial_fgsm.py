@@ -89,7 +89,7 @@ for i in range(args.epochs):
     img.requires_grad = True
 
     output, output_ssh = net(img)
-    lbl = torch.zeros((1,), dtype=torch.long)
+    lbl = torch.zeros((1,), dtype=torch.long).to(device)
     loss = criterion(output_ssh, lbl)
     net.zero_grad()
     loss.backward()
