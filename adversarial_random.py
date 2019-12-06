@@ -70,9 +70,8 @@ _, teloader = prepare_test_data(args)
 
 print("Random Attack...")
 for i in range(args.epochs):
-    img = np.random.randint(0, 255, (32, 32, 3))
+    img = (np.random.normal(0.5, 0.2, (32, 32, 3)) * 255).astype(int)
     adapt_single(net, img, optimizer, criterion, args.niter, args.batch_size)
-    print(i)
 
     if i % 50 == 49:
         print("%d%%" % ((i + 1) * 100 / 5000))
