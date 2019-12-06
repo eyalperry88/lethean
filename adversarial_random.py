@@ -3,6 +3,7 @@ import argparse
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import random
 
 from utils.misc import *
 from utils.adapt_helpers import *
@@ -27,7 +28,6 @@ classes = ('plane', 'car', 'bird', 'cat',
 parser = argparse.ArgumentParser()
 parser.add_argument('--level', default=0, type=int)
 parser.add_argument('--corruption', default='original')
-parser.add_argument('--corruption2', default='original')
 parser.add_argument('--dataroot', default='data/CIFAR-10-C/')
 parser.add_argument('--shared', default=None)
 ########################################################################
@@ -36,8 +36,7 @@ parser.add_argument('--group_norm', default=32, type=int)
 parser.add_argument('--batch_size', default=32, type=int)
 ########################################################################
 parser.add_argument('--lr', default=0.001, type=float)
-parser.add_argument('--niter', default=10, type=int)
-parser.add_argument('--epochs', default=10, type=int)
+parser.add_argument('--niter', default=1, type=int)
 parser.add_argument('--online', action='store_true')
 parser.add_argument('--shuffle', action='store_true')
 parser.add_argument('--threshold', default=1, type=float)
@@ -45,6 +44,7 @@ parser.add_argument('--dset_size', default=0, type=int)
 ########################################################################
 parser.add_argument('--resume', default=None)
 parser.add_argument('--outf', default='.')
+parser.add_argument('--epochs', default=10, type=int)
 
 args = parser.parse_args()
 args.threshold += 0.001		# to correct for numeric errors
@@ -66,24 +66,14 @@ net.load_state_dict(ckpt['net'])
 criterion = nn.CrossEntropyLoss().to(device)
 optimizer = optim.SGD(net.parameters(), lr=args.lr)
 
-def test_time_learn(loader):
-    net.train()
-    for i, dl in enumerate(loader):
-        optimizer.zero_grad()
+_, teloader = prepare_test_data(args)
 
-        rot_inputs, rot_labels = rotate_batch(dl[0])
-        inputs_ssh, labels_ssh = rot_inputs.to(device), rot_labels.to(device)
-        _, outputs_ssh = net(inputs_ssh)
-        loss_ssh = criterion(outputs_ssh, labels_ssh)
-        loss = loss_ssh
-
-        loss.backward()
-        optimizer.step()
-
+print("Random Attack...")
 for i in range(args.epochs):
-    print("Epoch", i)
-    _, teloader = prepare_test_data(args, shuffle=True)
-    test_time_learn(teloader)
+    img = np.random.randint(0, 256, (3, 32, 32))
+    adapt_single(net, img, optimizer, criterion, args.niter, args.batch_size)
 
-    err_cls = test(teloader, net)
-    print("Test Error: %.2f" % err_cls)
+    if i % 50 == 49:
+        print("%d%%" % ((i + 1) * 100 / 5000))
+        err_cls, correct_per_cls, total_per_cls = test(teloader, net, verbose=True, print_freq=0)
+        print("Epoch %d Test error: %.3f" % (i, err_cls))
