@@ -27,8 +27,6 @@ classes = ('plane', 'car', 'bird', 'cat',
 parser = argparse.ArgumentParser()
 parser.add_argument('--level', default=0, type=int)
 parser.add_argument('--corruption', default='original')
-parser.add_argument('--corruption2', default='original')
-parser.add_argument('--corruption3', default='original')
 parser.add_argument('--dataroot', default='data/CIFAR-10-C/')
 parser.add_argument('--shared', default=None)
 ########################################################################
@@ -37,7 +35,7 @@ parser.add_argument('--group_norm', default=32, type=int)
 parser.add_argument('--batch_size', default=32, type=int)
 ########################################################################
 parser.add_argument('--lr', default=0.001, type=float)
-parser.add_argument('--niter', default=10, type=int)
+parser.add_argument('--niter', default=1, type=int)
 parser.add_argument('--online', action='store_true')
 parser.add_argument('--shuffle', action='store_true')
 parser.add_argument('--threshold', default=1, type=float)
