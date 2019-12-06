@@ -84,29 +84,19 @@ def fgsm_attack(image, epsilon, data_grad):
 print("FGSM Attack")
 for i in range(args.epochs):
     idx = random.randint(0, len(trset) - 1)
-    img = teset[idx][0].unsqueeze(0).to(device)
+    img = trset[idx][0].unsqueeze(0).to(device)
+    lbl = trset[idx][1].unsqueeze(0).to(device)
     img.requires_grad = True
 
-    _, outputs_ssh = net(img)
-    label = torch.ones((1,), dtype=torch.long).to(device)
-    loss = criterion(outputs_ssh, label)
-
+    output, _ = net(img)
+    loss = criterion(output, lbl)
     net.zero_grad()
-
     loss.backward()
-
     data_grad = img.grad.data
 
     # Call FGSM Attack
     perturbed_img = fgsm_attack(img, args.epsilon, data_grad)
-
-    net.train()
-    optimizer.zero_grad()
-
-    _, ssh = net(perturbed_img)
-    loss = criterion(ssh, label)
-    loss.backward()
-    optimizer.step()
+    adapt_single_tensor(net, perturbed_img, optimizer, criterion, args.niter, args.batch_size)
 
     if i % 50 == 49:
         print("%d%%" % ((i + 1) * 100 / 5000))
