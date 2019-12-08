@@ -70,7 +70,23 @@ for i in range(args.epochs):
     rot_img = rotate_single_with_label(img, random_rot)
 
     # get gradient loss for auxiliary head
+    print("Aux")
+    d_aux_loss = []
+    inputs = [rot_img for _ in range(args.batch_size)]
+    inputs, labels = rotate_batch(inputs)
+    inputs, labels = inputs.to(device), labels.to(device)
+    optimizer.zero_grad()
+    _, ssh = net(inputs)
+    loss = criterion(ssh, labels)
+    loss.backward(retain_graph=True)
 
+    for p in net.parameters():
+        if p.grad is None:
+            continue
+        # split point
+        if list(p.grad.size())[0] == 512:
+            break
+        d_aux_loss.append(p.grad.data)
 
     # get gradient loss for auxiliary head
     print("Aux before rotation")
@@ -89,24 +105,6 @@ for i in range(args.epochs):
         if list(p.grad.size())[0] == 512:
             break
         d_aux_orig_loss.append(p.grad.data)
-
-    print("Aux")
-    d_aux_loss = []
-    inputs = [rot_img for _ in range(args.batch_size)]
-    inputs, labels = rotate_batch(inputs)
-    inputs, labels = inputs.to(device), labels.to(device)
-    optimizer.zero_grad()
-    _, ssh = net(inputs)
-    loss = criterion(ssh, labels)
-    loss.backward(retain_graph=True)
-
-    for p in net.parameters():
-        if p.grad is None:
-            continue
-        # split point
-        if list(p.grad.size())[0] == 512:
-            break
-        d_aux_loss.append(p.grad.data)
 
     # get gradient loss for main head
     print("Main")
@@ -130,18 +128,23 @@ for i in range(args.epochs):
 
     sum_dots = 0
     sum_dots2 = 0
+    sum_sanity = 0
     for i in range(len(d_aux_loss)):
         t1 = d_aux_loss[i].cpu().flatten()
         t2 = d_aux_orig_loss[i].cpu().flatten()
         t3 = d_main_loss[i].cpu().flatten()
         res = t1.dot(t2)
         res2 = t1.dot(t3)
+        sanity = t1.dot(t1)
         print(i, res)
         print(i, res2)
+        print(i, sanity)
         sum_dots += res
         sum_dots2 += res2
+        sum_sanity += sanity
     print("Sums", sum_dots)
     print("Sums2", sum_dots2)
+    print("Sums Sanity", sum_sanity)
 
 
 
