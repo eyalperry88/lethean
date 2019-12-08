@@ -70,7 +70,6 @@ for i in range(args.epochs):
     rot_img = rotate_single_with_label(img, random_rot)
 
     # get gradient loss for auxiliary head
-    print("Aux")
     d_aux_loss = []
     inputs = [rot_img for _ in range(args.batch_size)]
     inputs, labels = rotate_batch(inputs)
@@ -89,7 +88,6 @@ for i in range(args.epochs):
         d_aux_loss.append(p.grad.data.clone())
 
     # get gradient loss for main head
-    print("Main")
     d_main_loss = []
     input = rot_img.unsqueeze(0).to(device)
     label = torch.LongTensor([trset[idx][1]]).to(device)
@@ -118,10 +116,8 @@ for i in range(args.epochs):
         sum_dots += res
         sum_aux += aux
         sum_main += main
-    print("Sums", sum_dots)
-    print("Sums Aux", sum_aux)
-    print("Sums Main", sum_main)
-    print("Correlation: ", sum_dots / (np.sqrt(sum_aux) * np.sqrt(sum_main)))
+    corr = (sum_dots / (np.sqrt(sum_aux) * np.sqrt(sum_main))).item()
+    print(corr)
 
 
 
