@@ -88,14 +88,6 @@ for i in range(args.epochs):
             break
         d_aux_loss.append(p.grad.data.clone())
 
-    for p in net.parameters():
-        if p.grad is None:
-            continue
-        # split point
-        if list(p.grad.size())[0] == 512:
-            break
-        d_aux_orig_loss.append(p.grad.data.clone())
-
     # get gradient loss for main head
     print("Main")
     d_main_loss = []
@@ -105,8 +97,6 @@ for i in range(args.epochs):
     out, _ = net(input)
     loss = criterion(out, label)
     loss.backward(retain_graph=True)
-
-
 
     for p in net.parameters():
         if p.grad is None:
