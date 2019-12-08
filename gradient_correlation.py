@@ -118,7 +118,3 @@ for i in range(args.epochs):
         sum_main += main
     corr = (sum_dots / (np.sqrt(sum_aux) * np.sqrt(sum_main))).item()
     print(corr)
-
-
-
-    break
