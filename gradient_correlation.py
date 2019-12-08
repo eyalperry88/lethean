@@ -80,11 +80,12 @@ for i in range(args.epochs):
     loss = criterion(ssh, labels)
     loss.backward(retain_graph=True)
 
+    hmm = 0
     for p in net.parameters():
         if p.grad is None:
             continue
-        print(p.__dir__)
-        print(p.grad.data.size())
+        print(hmm, p.grad.data.size())
+        hmm += 1
         d_aux_loss.append(p.grad.data)
 
     # get gradient loss for main head
@@ -97,11 +98,12 @@ for i in range(args.epochs):
     loss = criterion(out, label)
     loss.backward(retain_graph=True)
 
+    hmm = 0
     for p in net.parameters():
         if p.grad is None:
             continue
-
-        print(p.grad.data.size())
+        print(hmm, p.grad.data.size())
+        hmm += 1
         d_main_loss.append(p.grad.data)
 
 
