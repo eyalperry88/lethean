@@ -91,7 +91,7 @@ for i in range(args.epochs):
     # get gradient loss for auxiliary head
     print("Aux before rotation")
     d_aux_orig_loss = []
-    input = rot_img.unsqueeze(0).to(device)
+    input = img.unsqueeze(0).to(device)
     label = torch.zeros((1,), dtype=torch.long).to(device)
     optimizer.zero_grad()
     _, ssh = net(input)
