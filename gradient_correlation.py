@@ -57,8 +57,7 @@ net.load_state_dict(ckpt['net'])
 print("Starting Test Error: %.3f" % ckpt['err_cls'])
 
 criterion = nn.CrossEntropyLoss().to(device)
-params = net.parameters()
-optimizer = optim.SGD(params, lr=args.lr)
+optimizer = optim.SGD(net.parameters(), lr=args.lr)
 
 trset, trloader = prepare_train_data(args)
 teset, teloader = prepare_test_data(args)
@@ -79,9 +78,9 @@ for i in range(args.epochs):
     optimizer.zero_grad()
     _, ssh = net(inputs)
     loss = criterion(ssh, labels)
-    loss.backward()
+    loss.backward(retain_graph=True)
 
-    for p in params:
+    for p in net.parameters():
         if p.grad is None:
             continue
         print(p.__dir__)
@@ -96,9 +95,9 @@ for i in range(args.epochs):
     optimizer.zero_grad()
     out, _ = net(input)
     loss = criterion(out, label)
-    loss.backward()
+    loss.backward(retain_graph=True)
 
-    for p in params:
+    for p in net.parameters():
         if p.grad is None:
             continue
 
