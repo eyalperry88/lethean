@@ -86,7 +86,7 @@ for i in range(args.epochs):
         # split point
         if list(p.grad.size())[0] == 512:
             break
-        d_aux_loss.append(p.grad.data)
+        d_aux_loss.append(p.grad.data.clone())
 
     # get gradient loss for auxiliary head
     print("Aux before rotation")
@@ -104,7 +104,7 @@ for i in range(args.epochs):
         # split point
         if list(p.grad.size())[0] == 512:
             break
-        d_aux_orig_loss.append(p.grad.data)
+        d_aux_orig_loss.append(p.grad.data.clone())
 
     # get gradient loss for main head
     print("Main")
@@ -124,24 +124,24 @@ for i in range(args.epochs):
         # split point
         if list(p.grad.size())[0] == 512:
             break
-        d_main_loss.append(p.grad.data)
+        d_main_loss.append(p.grad.data.clone())
 
     sum_dots = 0
     sum_dots2 = 0
-    sum_sanity = 0
+    sum_aux = 0
     for i in range(len(d_aux_loss)):
         t1 = d_aux_loss[i].cpu().flatten()
         t2 = d_aux_orig_loss[i].cpu().flatten()
         t3 = d_main_loss[i].cpu().flatten()
         res = t1.dot(t2)
         res2 = t1.dot(t3)
-        sanity = t1.dot(t1)
+        aux = t1.dot(t1)
         print(i, res)
         print(i, res2)
-        print(i, sanity)
+        print(i, aux)
         sum_dots += res
         sum_dots2 += res2
-        sum_sanity += sanity
+        sum_aux += aux
     print("Sums", sum_dots)
     print("Sums2", sum_dots2)
     print("Sums Sanity", sum_sanity)
