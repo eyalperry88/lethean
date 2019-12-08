@@ -88,16 +88,6 @@ for i in range(args.epochs):
             break
         d_aux_loss.append(p.grad.data.clone())
 
-    # get gradient loss for auxiliary head
-    print("Aux before rotation")
-    d_aux_orig_loss = []
-    input = img.unsqueeze(0).to(device)
-    label = torch.zeros((1,), dtype=torch.long).to(device)
-    optimizer.zero_grad()
-    _, ssh = net(input)
-    loss = criterion(ssh, label)
-    loss.backward(retain_graph=True)
-
     for p in net.parameters():
         if p.grad is None:
             continue
@@ -127,24 +117,23 @@ for i in range(args.epochs):
         d_main_loss.append(p.grad.data.clone())
 
     sum_dots = 0
-    sum_dots2 = 0
     sum_aux = 0
+    sum_main = 0
     for i in range(len(d_aux_loss)):
         t1 = d_aux_loss[i].cpu().flatten()
-        t2 = d_aux_orig_loss[i].cpu().flatten()
-        t3 = d_main_loss[i].cpu().flatten()
+        t2 = d_main_loss[i].cpu().flatten()
         res = t1.dot(t2)
-        res2 = t1.dot(t3)
         aux = t1.dot(t1)
+        main = t2.dot(t2)
         print(i, res)
-        print(i, res2)
         print(i, aux)
         sum_dots += res
-        sum_dots2 += res2
         sum_aux += aux
+        sum_main += main
     print("Sums", sum_dots)
-    print("Sums2", sum_dots2)
-    print("Sums Sanity", sum_sanity)
+    print("Sums Aux", sum_aux)
+    print("Sums Main", sum_main)
+    print("Correlation: ", sums_dot / (np.sqrt(sum_aux) * np.sqrt(sum_main)))
 
 
 
