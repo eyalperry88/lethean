@@ -70,23 +70,7 @@ for i in range(args.epochs):
     rot_img = rotate_single_with_label(img, random_rot)
 
     # get gradient loss for auxiliary head
-    print("Aux")
-    d_aux_loss = []
-    inputs = [rot_img for _ in range(args.batch_size)]
-    inputs, labels = rotate_batch(inputs)
-    inputs, labels = inputs.to(device), labels.to(device)
-    optimizer.zero_grad()
-    _, ssh = net(inputs)
-    loss = criterion(ssh, labels)
-    loss.backward(retain_graph=True)
 
-    for p in net.parameters():
-        if p.grad is None:
-            continue
-        # split point
-        if list(p.grad.size())[0] == 512:
-            break
-        d_aux_loss.append(p.grad.data)
 
     # get gradient loss for auxiliary head
     print("Aux before rotation")
@@ -106,6 +90,24 @@ for i in range(args.epochs):
             break
         d_aux_orig_loss.append(p.grad.data)
 
+    print("Aux")
+    d_aux_loss = []
+    inputs = [rot_img for _ in range(args.batch_size)]
+    inputs, labels = rotate_batch(inputs)
+    inputs, labels = inputs.to(device), labels.to(device)
+    optimizer.zero_grad()
+    _, ssh = net(inputs)
+    loss = criterion(ssh, labels)
+    loss.backward(retain_graph=True)
+
+    for p in net.parameters():
+        if p.grad is None:
+            continue
+        # split point
+        if list(p.grad.size())[0] == 512:
+            break
+        d_aux_loss.append(p.grad.data)
+
     # get gradient loss for main head
     print("Main")
     d_main_loss = []
@@ -115,6 +117,8 @@ for i in range(args.epochs):
     out, _ = net(input)
     loss = criterion(out, label)
     loss.backward(retain_graph=True)
+
+
 
     for p in net.parameters():
         if p.grad is None:
