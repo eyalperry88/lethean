@@ -88,6 +88,24 @@ for i in range(args.epochs):
             break
         d_aux_loss.append(p.grad.data)
 
+    # get gradient loss for auxiliary head
+    print("Aux before rotation")
+    d_aux_orig_loss = []
+    input = rot_img.unsqueeze(0).to(device)
+    label = torch.zeros((1,), dtype=torch.long).to(device)
+    optimizer.zero_grad()
+    _, ssh = net(input)
+    loss = criterion(ssh, label)
+    loss.backward(retain_graph=True)
+
+    for p in net.parameters():
+        if p.grad is None:
+            continue
+        # split point
+        if list(p.grad.size())[0] == 512:
+            break
+        d_aux_orig_loss.append(p.grad.data)
+
     # get gradient loss for main head
     print("Main")
     d_main_loss = []
@@ -107,13 +125,19 @@ for i in range(args.epochs):
         d_main_loss.append(p.grad.data)
 
     sum_dots = 0
+    sum_dots2 = 0
     for i in range(len(d_aux_loss)):
-        t1 = d_aux_loss[i].flatten()
-        t2 = d_main_loss[i].flatten()
+        t1 = d_aux_loss[i].cpu().flatten()
+        t2 = d_aux_orig_loss[i].cpu().flatten()
+        t3 = d_main_loss[i].cpu().flatten()
         res = t1.dot(t2)
+        res2 = t1.dot(t3)
         print(i, res)
+        print(i, res2)
         sum_dots += res
-    print("Sums", res)
+        sum_dots2 += res2
+    print("Sums", sum_dots)
+    print("Sums2", sum_dots2)
 
 
 
