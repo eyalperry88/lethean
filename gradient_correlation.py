@@ -73,7 +73,7 @@ for i in range(args.epochs):
     # get gradient loss for auxiliary head
     print("Aux")
     d_aux_loss = []
-    inputs = [rot_img for _ in range(batch_size)]
+    inputs = [rot_img for _ in range(args.batch_size)]
     inputs, labels = rotate_batch(inputs)
     inputs, labels = inputs.to(device), labels.to(device)
     optimizer.zero_grad()
