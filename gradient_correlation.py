@@ -115,15 +115,13 @@ for i in range(args.epochs):
         res = t1.dot(t2)
         aux = t1.dot(t1)
         main = t2.dot(t2)
-        print(i, res)
-        print(i, aux)
         sum_dots += res
         sum_aux += aux
         sum_main += main
     print("Sums", sum_dots)
     print("Sums Aux", sum_aux)
     print("Sums Main", sum_main)
-    print("Correlation: ", sums_dot / (np.sqrt(sum_aux) * np.sqrt(sum_main)))
+    print("Correlation: ", sum_dots / (np.sqrt(sum_aux) * np.sqrt(sum_main)))
 
 
 
