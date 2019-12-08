@@ -62,6 +62,7 @@ optimizer = optim.SGD(net.parameters(), lr=args.lr)
 trset, trloader = prepare_train_data(args)
 teset, teloader = prepare_test_data(args)
 
+corrs = []
 print("Gradient Correlation")
 for i in range(args.epochs):
     idx = random.randint(0, len(trset) - 1)
@@ -117,4 +118,6 @@ for i in range(args.epochs):
         sum_aux += aux
         sum_main += main
     corr = (sum_dots / (np.sqrt(sum_aux) * np.sqrt(sum_main))).item()
-    print(corr)
+    corrs.append(corr)
+
+np.save("corrs.npy", np.array(corrs))
