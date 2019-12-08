@@ -1,6 +1,6 @@
 # Lethean Attack: An Online Data Poisoning Technique
 
-Heavily based source code by `Y. Sun, X. Wang, Z. Liu, J. Miller, A. A. Efros, and M. Hardt. Test-time training for out-of-distribution generalization, 2019`
+Heavily based on the source code by `Y. Sun, X. Wang, Z. Liu, J. Miller, A. A. Efros, and M. Hardt. Test-time training for out-of-distribution generalization, 2019`
 
 See [paper](link to paper) for more details.
 
