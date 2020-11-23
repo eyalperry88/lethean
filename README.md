@@ -40,7 +40,7 @@ python adversarial_fgsm.py --resume [MODEL_DIRECTORY] --epochs 5000
 ## Test using CIFAR-10-C data
 
 ```
-python adversarial_fgsm.py --resume [MODEL_DIRECTORY] --epochs 5000 --corruption [CORRUPTION] --level [1/2/3/4/5]
+python test.py --resume [MODEL_DIRECTORY] --epochs 5000 --corruption [CORRUPTION] --level [1/2/3/4/5]
 ```
 
 Possible corruption types:
