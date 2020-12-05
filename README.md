@@ -2,7 +2,7 @@
 
 Heavily based on the source code by `Y. Sun, X. Wang, Z. Liu, J. Miller, A. A. Efros, and M. Hardt. Test-time training for out-of-distribution generalization, 2019`
 
-See [paper](link to paper) for more details.
+See https://arxiv.org/abs/2011.12355 for more details.
 
 ## Prerequisites
 
